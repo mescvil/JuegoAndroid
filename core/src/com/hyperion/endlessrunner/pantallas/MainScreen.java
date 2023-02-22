@@ -27,7 +27,7 @@ public class MainScreen implements Screen {
     private int puntuacion = 0;
     private int nAliens;
     public static int aliensMuertos = 0;
-    private Nave nave;
+    private final Nave nave;
     private Alien[][] aliens;
     private final int aliensAlto = 8;
     private final int aliensAncho = 6;
@@ -163,7 +163,7 @@ public class MainScreen implements Screen {
                             aliensMuertos++;
                             Alien.velocidad += aliensMuertos * 0.1f;
                             disparo.setPosicion(0, 10000000);
-                            j++;
+                            break;
                         }
                     }
                 }
@@ -210,7 +210,7 @@ public class MainScreen implements Screen {
         for (Alien[] aliensAncho : aliens) {
             for (Alien alien : aliensAncho) {
                 if (alien.sprite.getBoundingRectangle().overlaps(colisionInferior) && alien.vivo) {
-                    juego.cambiaPantalla(new WinScreen(juego));
+                    juego.cambiaPantalla(new GameOverScreen(juego));
                 }
             }
         }
