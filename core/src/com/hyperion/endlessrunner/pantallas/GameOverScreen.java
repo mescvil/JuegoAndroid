@@ -8,16 +8,20 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.hyperion.endlessrunner.GalaxyInvaders;
 
-public class FinJuegoScreen implements Screen {
+public class GameOverScreen implements Screen {
 
-    private GalaxyInvaders juego;
+    private final GalaxyInvaders juego;
     private Sprite fondo;
     private BitmapFont fuenteOver;
-    private String textoOver = "- GAME OVER -";
+    private BitmapFont fuenteClick;
+    private String textoOver = "> GAME OVER <";
+    private String textoClick = "Pulsa para continuar";
+    private long espera;
 
-    public FinJuegoScreen(GalaxyInvaders juego) {
+    public GameOverScreen(GalaxyInvaders juego) {
         this.juego = juego;
         fondo = new Sprite(MainScreen.texturaOver);
         fondo.setPosition(185, MainScreen.ANCHO / 1.5f);
@@ -29,10 +33,18 @@ public class FinJuegoScreen implements Screen {
         parameter.size = 120;
         parameter.color = Color.RED;
         fuenteOver = generadorFuente.generateFont(parameter);
+
+        parameter.size = 60;
+        parameter.color = Color.WHITE;
+        fuenteClick = generadorFuente.generateFont(parameter);
+
+        espera = TimeUtils.nanoTime();
     }
 
     @Override
-    public void show() {}
+    public void show() {
+        MainScreen.sonidoGameOver.play();
+    }
 
     @Override
     public void render(float delta) {
@@ -40,12 +52,21 @@ public class FinJuegoScreen implements Screen {
         MainScreen.spriteBatch.begin();
 
         fondo.draw(MainScreen.spriteBatch);
-        final GlyphLayout layout = new GlyphLayout(fuenteOver, textoOver);
+        final GlyphLayout layoutOver = new GlyphLayout(fuenteOver, textoOver);
 
-        fuenteOver.draw(MainScreen.spriteBatch, layout,
-                (MainScreen.ANCHO - layout.width) / 2f, MainScreen.ALTO / 1.5f);
+        fuenteOver.draw(MainScreen.spriteBatch, layoutOver,
+                (MainScreen.ANCHO - layoutOver.width) / 2f, MainScreen.ALTO / 1.5f);
+
+        final GlyphLayout layoutClick = new GlyphLayout(fuenteClick, textoClick);
+
+        fuenteClick.draw(MainScreen.spriteBatch, layoutClick,
+                (MainScreen.ANCHO - layoutClick.width) / 2f, MainScreen.ALTO / 1.8f);
 
         MainScreen.spriteBatch.end();
+
+        if (Gdx.input.isTouched() && TimeUtils.nanoTime() - espera > 500000000) {
+            juego.cambiaPantalla(new MainScreen(juego));
+        }
     }
 
     @Override
@@ -59,7 +80,6 @@ public class FinJuegoScreen implements Screen {
 
     @Override
     public void resume() {
-
     }
 
     @Override

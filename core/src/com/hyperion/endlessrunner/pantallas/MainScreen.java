@@ -34,16 +34,20 @@ public class MainScreen implements Screen {
     private long ultimoDisparo;
     private Texture texturaNave;
     public Texture texturaFondo;
+    public static Texture texturaWin;
     public static Texture texturaOver;
     private Texture texturaBoton;
     private Texture texturaBala;
     private Texture texturaAlien;
     private Sound sonidoKill;
+    public static Sound sonidoGameOver;
+    public static Sound sonidoWin;
     private BitmapFont fuentePuntuacion;
     private BitmapFont fuenteAliens;
     public static SpriteBatch spriteBatch;
     private Sprite fondo;
     private Rectangle botonDiaparo;
+    private Rectangle colisionInferior;
 
 
     public MainScreen(GalaxyInvaders juego) {
@@ -65,9 +69,12 @@ public class MainScreen implements Screen {
         texturaBoton = new Texture(Gdx.files.internal("sprites/boton.png"));
         texturaBala = new Texture(Gdx.files.internal("sprites/disparo_pequenio.png"));
         texturaAlien = new Texture(Gdx.files.internal("sprites/alien.png"));
+        texturaWin = new Texture(Gdx.files.internal("sprites/fondoWin.png"));
         texturaOver = new Texture(Gdx.files.internal("sprites/fondoOver.png"));
 
         sonidoKill = Gdx.audio.newSound(Gdx.files.internal("sonidos/kill.wav"));
+        sonidoGameOver = Gdx.audio.newSound(Gdx.files.internal("sonidos/gameover.wav"));
+        sonidoWin = Gdx.audio.newSound(Gdx.files.internal("sonidos/transicion.wav"));
 
         FreeTypeFontGenerator generadorFuente = new FreeTypeFontGenerator(Gdx.files.internal("fuentes/Pixelmania.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -85,6 +92,8 @@ public class MainScreen implements Screen {
         fondo = new Sprite(texturaFondo);
         fondo.setPosition(185, ANCHO / 3f + 450f);
         fondo.scale(1.5f);
+
+        colisionInferior = new Rectangle(0, 0, ANCHO, 400);
     }
 
     private void configuraBotonDisparo() {
@@ -134,6 +143,7 @@ public class MainScreen implements Screen {
         checkBotonDisparo();
         checkColisiones();
         moviemientoAliens();
+        checkEstadoPartida();
     }
 
     private void checkColisiones() {
@@ -151,7 +161,7 @@ public class MainScreen implements Screen {
                             puntuacion += 100;
                             nAliens--;
                             aliensMuertos++;
-                            Alien.velocidad += aliensMuertos * 0.3f;
+                            Alien.velocidad += aliensMuertos * 0.1f;
                             disparo.setPosicion(0, 10000000);
                             j++;
                         }
@@ -170,8 +180,6 @@ public class MainScreen implements Screen {
 
                 if (toque.y <= ALTO && toque.y >= posicionBoton)
                     if (toque.x >= 0 && toque.x <= ANCHO) {
-                        juego.cambiaPantalla(new FinJuegoScreen(juego));
-
                         nave.dispara();
                         ultimoDisparo = TimeUtils.nanoTime();
                     }
@@ -194,6 +202,22 @@ public class MainScreen implements Screen {
                 }
             }
             Alien.cambio = false;
+        }
+    }
+
+    private void checkEstadoPartida() {
+        /* Fail state */
+        for (Alien[] aliensAncho : aliens) {
+            for (Alien alien : aliensAncho) {
+                if (alien.sprite.getBoundingRectangle().overlaps(colisionInferior) && alien.vivo) {
+                    juego.cambiaPantalla(new WinScreen(juego));
+                }
+            }
+        }
+
+        /* Win state */
+        if (nAliens <= 0) {
+            juego.cambiaPantalla(new WinScreen(juego));
         }
     }
 
@@ -224,6 +248,8 @@ public class MainScreen implements Screen {
         texturaAlien.dispose();
         texturaBoton.dispose();
         texturaOver.dispose();
+        texturaBala.dispose();
+        texturaWin.dispose();
         spriteBatch.dispose();
     }
 }
