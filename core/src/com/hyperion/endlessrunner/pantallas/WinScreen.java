@@ -67,7 +67,7 @@ public class WinScreen implements Screen {
         MainScreen.spriteBatch.end();
 
         if (Gdx.input.isTouched() && TimeUtils.nanoTime() - espera > 500000000) {
-            juego.cambiaPantalla(new MainScreen(juego));
+            juego.cambiaPantalla(new MenuScreen(juego));
         }
     }
 
