@@ -1,5 +1,7 @@
 package com.hyperion.endlessrunner.pantallas;
 
+import static com.hyperion.endlessrunner.Recursos.sonidoGameOver;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -10,6 +12,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.hyperion.endlessrunner.GalaxyInvaders;
+import com.hyperion.endlessrunner.Recursos;
+import com.hyperion.endlessrunner.VariablesGlobales;
 
 public class GameOverScreen implements Screen {
 
@@ -23,8 +27,8 @@ public class GameOverScreen implements Screen {
 
     public GameOverScreen(GalaxyInvaders juego) {
         this.juego = juego;
-        fondo = new Sprite(MainScreen.texturaOver);
-        fondo.setPosition(185, MainScreen.ANCHO / 1.5f);
+        fondo = new Sprite(Recursos.texturaOver);
+        fondo.setPosition(185, VariablesGlobales.ANCHO / 1.5f);
         fondo.scale(1.5f);
 
         FreeTypeFontGenerator generadorFuente
@@ -43,7 +47,7 @@ public class GameOverScreen implements Screen {
 
     @Override
     public void show() {
-        MainScreen.sonidoGameOver.play();
+        sonidoGameOver.play();
     }
 
     @Override
@@ -55,12 +59,12 @@ public class GameOverScreen implements Screen {
         final GlyphLayout layoutOver = new GlyphLayout(fuenteOver, textoOver);
 
         fuenteOver.draw(MainScreen.spriteBatch, layoutOver,
-                (MainScreen.ANCHO - layoutOver.width) / 2f, MainScreen.ALTO / 1.5f);
+                (VariablesGlobales.ANCHO - layoutOver.width) / 2f, VariablesGlobales.ALTO / 1.5f);
 
         final GlyphLayout layoutClick = new GlyphLayout(fuenteClick, textoClick);
 
         fuenteClick.draw(MainScreen.spriteBatch, layoutClick,
-                (MainScreen.ANCHO - layoutClick.width) / 2f, MainScreen.ALTO / 1.8f);
+                (VariablesGlobales.ANCHO - layoutClick.width) / 2f, VariablesGlobales.ALTO / 1.8f);
 
         MainScreen.spriteBatch.end();
 

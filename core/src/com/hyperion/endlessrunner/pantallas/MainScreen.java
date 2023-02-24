@@ -1,8 +1,18 @@
 package com.hyperion.endlessrunner.pantallas;
 
+import static com.hyperion.endlessrunner.Recursos.texturaAlien;
+import static com.hyperion.endlessrunner.Recursos.texturaBala;
+import static com.hyperion.endlessrunner.Recursos.texturaBoton;
+import static com.hyperion.endlessrunner.Recursos.texturaFondo;
+import static com.hyperion.endlessrunner.Recursos.texturaNave;
+import static com.hyperion.endlessrunner.Recursos.texturaOver;
+import static com.hyperion.endlessrunner.Recursos.texturaWin;
+import static com.hyperion.endlessrunner.Recursos.sonidoWin;
+import static com.hyperion.endlessrunner.Recursos.sonidoGameOver;
+import static com.hyperion.endlessrunner.Recursos.sonidoKill;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,15 +25,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.hyperion.endlessrunner.GalaxyInvaders;
+import com.hyperion.endlessrunner.VariablesGlobales;
 import com.hyperion.endlessrunner.entidades.Alien;
 import com.hyperion.endlessrunner.entidades.Disparo;
 import com.hyperion.endlessrunner.entidades.Nave;
 
 public class MainScreen implements Screen {
-
-    public static int ANCHO;
-    public static int ALTO;
-    private GalaxyInvaders juego;
+    private final GalaxyInvaders juego;
     private int puntuacion = 0;
     private int nAliens;
     public static int aliensMuertos = 0;
@@ -32,16 +40,6 @@ public class MainScreen implements Screen {
     private final int aliensAlto = 8;
     private final int aliensAncho = 6;
     private long ultimoDisparo;
-    private Texture texturaNave;
-    public Texture texturaFondo;
-    public static Texture texturaWin;
-    public static Texture texturaOver;
-    private Texture texturaBoton;
-    private Texture texturaBala;
-    private Texture texturaAlien;
-    private Sound sonidoKill;
-    public static Sound sonidoGameOver;
-    public static Sound sonidoWin;
     private BitmapFont fuentePuntuacion;
     private BitmapFont fuenteAliens;
     public static SpriteBatch spriteBatch;
@@ -52,8 +50,8 @@ public class MainScreen implements Screen {
 
     public MainScreen(GalaxyInvaders juego) {
         this.juego = juego;
-        ALTO = Gdx.graphics.getHeight();
-        ANCHO = Gdx.graphics.getWidth();
+        VariablesGlobales.ALTO = Gdx.graphics.getHeight();
+        VariablesGlobales.ANCHO = Gdx.graphics.getWidth();
         spriteBatch = new SpriteBatch();
 
         cargaRecursos();
@@ -90,14 +88,14 @@ public class MainScreen implements Screen {
     private void configuraFondo() {
         texturaFondo = new Texture(Gdx.files.internal("sprites/fondo.png"));
         fondo = new Sprite(texturaFondo);
-        fondo.setPosition(185, ANCHO / 3f + 450f);
+        fondo.setPosition(185, VariablesGlobales.ANCHO / 3f + 450f);
         fondo.scale(1.5f);
 
-        colisionInferior = new Rectangle(0, 0, ANCHO, 400);
+        colisionInferior = new Rectangle(0, 0, VariablesGlobales.ANCHO, 400);
     }
 
     private void configuraBotonDisparo() {
-        botonDiaparo = new Rectangle(0f, 0f, ANCHO, 150f);
+        botonDiaparo = new Rectangle(0f, 0f, VariablesGlobales.ANCHO, 150f);
     }
 
     private void creaAliens() {
@@ -107,7 +105,7 @@ public class MainScreen implements Screen {
                 aliens[i][j] = new Alien(texturaAlien,
                         new Vector2(
                                 j * 135,
-                                (ALTO - texturaAlien.getHeight() - 180) - i * (texturaAlien.getHeight() + 50)));
+                                (VariablesGlobales.ALTO - texturaAlien.getHeight() - 180) - i * (texturaAlien.getHeight() + 50)));
             }
         }
         Alien.velocidad = 200;
@@ -135,8 +133,8 @@ public class MainScreen implements Screen {
         spriteBatch.draw(texturaBoton, botonDiaparo.x - 20f, botonDiaparo.y,
                 botonDiaparo.getWidth() + 40f, botonDiaparo.getHeight());
 
-        fuentePuntuacion.draw(spriteBatch, "Score: " + puntuacion, 50, ALTO - 50);
-        fuenteAliens.draw(spriteBatch, "Aliens: " + nAliens, 50, ALTO - 100);
+        fuentePuntuacion.draw(spriteBatch, "Score: " + puntuacion, 50, VariablesGlobales.ALTO - 50);
+        fuenteAliens.draw(spriteBatch, "Aliens: " + nAliens, 50, VariablesGlobales.ALTO - 100);
         spriteBatch.end();
 
         nave.actualizaPosicion();
@@ -178,8 +176,8 @@ public class MainScreen implements Screen {
                 float posicionBoton = Gdx.graphics.getHeight() - botonDiaparo.getHeight();
 
 
-                if (toque.y <= ALTO && toque.y >= posicionBoton)
-                    if (toque.x >= 0 && toque.x <= ANCHO) {
+                if (toque.y <= VariablesGlobales.ALTO && toque.y >= posicionBoton)
+                    if (toque.x >= 0 && toque.x <= VariablesGlobales.ANCHO) {
                         nave.dispara();
                         ultimoDisparo = TimeUtils.nanoTime();
                     }
