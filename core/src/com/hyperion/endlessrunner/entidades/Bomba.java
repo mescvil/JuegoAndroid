@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Bomba {
 
-    private static final float VELOCIDAD = 750;
+    private static final float VELOCIDAD = 600;
     public Vector2 posicion;
     public Sprite sprite;
     public boolean activa;

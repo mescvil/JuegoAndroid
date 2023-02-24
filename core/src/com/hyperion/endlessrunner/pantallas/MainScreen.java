@@ -245,7 +245,8 @@ public class MainScreen implements Screen {
     private void checkBomba() {
         if (TimeUtils.nanoTime() - ultimaBomba > 2000000000 && !bomba.activa) {
             Random random = new Random();
-            int xAleatoria = random.nextInt(ANCHO - texturaBomba.getWidth()) + texturaBomba.getWidth();
+            int xAleatoria = random.nextInt(
+                    ((ANCHO - texturaBomba.getWidth()) - (texturaBomba.getWidth())) + texturaBomba.getWidth());
             bomba.activaBomba(new Vector2(xAleatoria, ALTO));
             ultimaBomba = TimeUtils.nanoTime();
         }
