@@ -2,6 +2,7 @@ package com.hyperion.endlessrunner.pantallas;
 
 import static com.hyperion.endlessrunner.Recursos.texturaAlien;
 import static com.hyperion.endlessrunner.Recursos.texturaBala;
+import static com.hyperion.endlessrunner.Recursos.texturaBomba;
 import static com.hyperion.endlessrunner.Recursos.texturaBoton;
 import static com.hyperion.endlessrunner.Recursos.texturaFondo;
 import static com.hyperion.endlessrunner.Recursos.texturaNave;
@@ -10,7 +11,12 @@ import static com.hyperion.endlessrunner.Recursos.texturaWin;
 import static com.hyperion.endlessrunner.Recursos.sonidoWin;
 import static com.hyperion.endlessrunner.Recursos.sonidoGameOver;
 import static com.hyperion.endlessrunner.Recursos.sonidoKill;
+import static com.hyperion.endlessrunner.Recursos.sonidoBomba;
+import static com.hyperion.endlessrunner.Recursos.sonidoBombaKO;
+import static com.hyperion.endlessrunner.VariablesGlobales.ALTO;
+import static com.hyperion.endlessrunner.VariablesGlobales.ANCHO;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -27,8 +33,11 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.hyperion.endlessrunner.GalaxyInvaders;
 import com.hyperion.endlessrunner.VariablesGlobales;
 import com.hyperion.endlessrunner.entidades.Alien;
+import com.hyperion.endlessrunner.entidades.Bomba;
 import com.hyperion.endlessrunner.entidades.Disparo;
 import com.hyperion.endlessrunner.entidades.Nave;
+
+import java.util.Random;
 
 public class MainScreen implements Screen {
     private final GalaxyInvaders juego;
@@ -36,10 +45,12 @@ public class MainScreen implements Screen {
     private int nAliens;
     public static int aliensMuertos = 0;
     private final Nave nave;
+    private final Bomba bomba;
     private Alien[][] aliens;
     private final int aliensAlto = 8;
     private final int aliensAncho = 6;
     private long ultimoDisparo;
+    private long ultimaBomba;
     private BitmapFont fuentePuntuacion;
     private BitmapFont fuenteAliens;
     public static SpriteBatch spriteBatch;
@@ -51,7 +62,7 @@ public class MainScreen implements Screen {
     public MainScreen(GalaxyInvaders juego) {
         this.juego = juego;
         VariablesGlobales.ALTO = Gdx.graphics.getHeight();
-        VariablesGlobales.ANCHO = Gdx.graphics.getWidth();
+        ANCHO = Gdx.graphics.getWidth();
         spriteBatch = new SpriteBatch();
 
         cargaRecursos();
@@ -60,6 +71,8 @@ public class MainScreen implements Screen {
         creaAliens();
 
         nave = new Nave(texturaNave, texturaBala, botonDiaparo.getHeight());
+        bomba = new Bomba(texturaBomba, new Vector2());
+        ultimaBomba = TimeUtils.nanoTime();
     }
 
     private void cargaRecursos() {
@@ -69,10 +82,13 @@ public class MainScreen implements Screen {
         texturaAlien = new Texture(Gdx.files.internal("sprites/alien.png"));
         texturaWin = new Texture(Gdx.files.internal("sprites/fondoWin.png"));
         texturaOver = new Texture(Gdx.files.internal("sprites/fondoOver.png"));
+        texturaBomba = new Texture(Gdx.files.internal("sprites/bomba.png"));
 
         sonidoKill = Gdx.audio.newSound(Gdx.files.internal("sonidos/kill.wav"));
         sonidoGameOver = Gdx.audio.newSound(Gdx.files.internal("sonidos/gameover.wav"));
         sonidoWin = Gdx.audio.newSound(Gdx.files.internal("sonidos/transicion.wav"));
+        sonidoBomba = Gdx.audio.newSound(Gdx.files.internal("sonidos/bomba.wav"));
+        sonidoBombaKO = Gdx.audio.newSound(Gdx.files.internal("sonidos/bombaKO.wav"));
 
         FreeTypeFontGenerator generadorFuente = new FreeTypeFontGenerator(Gdx.files.internal("fuentes/Pixelmania.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -88,14 +104,14 @@ public class MainScreen implements Screen {
     private void configuraFondo() {
         texturaFondo = new Texture(Gdx.files.internal("sprites/fondo.png"));
         fondo = new Sprite(texturaFondo);
-        fondo.setPosition(185, VariablesGlobales.ANCHO / 3f + 450f);
+        fondo.setPosition(185, ANCHO / 3f + 450f);
         fondo.scale(1.5f);
 
-        colisionInferior = new Rectangle(0, 0, VariablesGlobales.ANCHO, 400);
+        colisionInferior = new Rectangle(0, 0, ANCHO, 400);
     }
 
     private void configuraBotonDisparo() {
-        botonDiaparo = new Rectangle(0f, 0f, VariablesGlobales.ANCHO, 150f);
+        botonDiaparo = new Rectangle(0f, 0f, ANCHO, 150f);
     }
 
     private void creaAliens() {
@@ -121,6 +137,9 @@ public class MainScreen implements Screen {
         fondo.draw(spriteBatch);
         nave.dibuja(spriteBatch);
 
+        if (bomba.activa)
+            bomba.dibuja(spriteBatch);
+
         for (int i = 0; i < aliensAlto; i++) {
             for (int j = 0; j < aliensAncho; j++) {
                 Alien alien = aliens[i][j];
@@ -135,18 +154,21 @@ public class MainScreen implements Screen {
 
         fuentePuntuacion.draw(spriteBatch, "Score: " + puntuacion, 50, VariablesGlobales.ALTO - 50);
         fuenteAliens.draw(spriteBatch, "Aliens: " + nAliens, 50, VariablesGlobales.ALTO - 100);
+
         spriteBatch.end();
 
         nave.actualizaPosicion();
+        moviemientoAliens();
+        movimientoBomba();
+        checkEstadoPartida();
+        checkBomba();
         checkBotonDisparo();
         checkColisiones();
-        moviemientoAliens();
-        checkEstadoPartida();
     }
 
     private void checkColisiones() {
         for (Disparo disparo : nave.disparos) {
-            if (disparo.activo)
+            if (disparo.activo) {
                 for (int i = 0; i < aliensAlto; i++) {
                     for (int j = 0; j < aliensAncho; j++) {
                         Alien alien = aliens[i][j];
@@ -165,6 +187,17 @@ public class MainScreen implements Screen {
                         }
                     }
                 }
+                if (bomba.activa
+                        &&
+                        disparo.sprite.getBoundingRectangle().overlaps(bomba.sprite.getBoundingRectangle())) {
+
+                    puntuacion += 200;
+                    sonidoBombaKO.play();
+                    disparo.setPosicion(0, 10000000);
+                    bomba.activa = false;
+                    ultimaBomba = TimeUtils.nanoTime();
+                }
+            }
         }
     }
 
@@ -177,7 +210,7 @@ public class MainScreen implements Screen {
 
 
                 if (toque.y <= VariablesGlobales.ALTO && toque.y >= posicionBoton)
-                    if (toque.x >= 0 && toque.x <= VariablesGlobales.ANCHO) {
+                    if (toque.x >= 0 && toque.x <= ANCHO) {
                         nave.dispara();
                         ultimoDisparo = TimeUtils.nanoTime();
                     }
@@ -203,6 +236,21 @@ public class MainScreen implements Screen {
         }
     }
 
+    private void movimientoBomba() {
+        if (bomba.activa) {
+            bomba.actulizaPosicion();
+        }
+    }
+
+    private void checkBomba() {
+        if (TimeUtils.nanoTime() - ultimaBomba > 2000000000 && !bomba.activa) {
+            Random random = new Random();
+            int xAleatoria = random.nextInt(ANCHO - texturaBomba.getWidth()) + texturaBomba.getWidth();
+            bomba.activaBomba(new Vector2(xAleatoria, ALTO));
+            ultimaBomba = TimeUtils.nanoTime();
+        }
+    }
+
     private void checkEstadoPartida() {
         /* Fail state */
         for (Alien[] aliensAncho : aliens) {
@@ -211,6 +259,10 @@ public class MainScreen implements Screen {
                     juego.cambiaPantalla(new GameOverScreen(juego));
                 }
             }
+        }
+
+        if (bomba.sprite.getBoundingRectangle().overlaps(colisionInferior) && bomba.activa) {
+            juego.cambiaPantalla(new GameOverScreen(juego));
         }
 
         /* Win state */

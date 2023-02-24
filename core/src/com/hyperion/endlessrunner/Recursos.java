@@ -11,7 +11,10 @@ public class Recursos {
     public static Texture texturaBoton;
     public static Texture texturaBala;
     public static Texture texturaAlien;
+    public static Texture texturaBomba;
     public static Sound sonidoKill;
     public static Sound sonidoGameOver;
     public static Sound sonidoWin;
+    public static Sound sonidoBomba;
+    public static Sound sonidoBombaKO;
 }
